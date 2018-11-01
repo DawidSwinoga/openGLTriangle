@@ -22,23 +22,26 @@ int currentDirection = POSITIVE;
 double currentMoveDistance = 0;
 const double maxMoveDistance = (3 * sqrt(pow(size, 2) + pow(size, 2)));
 
+int move = 0;
+static const int moveSpeed = 1;
+
 int triangleAngle0 = 0;
-int triangleRotateSpeed0 = -3;
+int triangleRotateSpeed0 = 0;
 
 int triangleAngle1 = 0;
-int triangleRotateSpeed1 = -3;
+int triangleRotateSpeed1 = 0;
 
 int triangleAngle2 = 0;
-int triangleRotateSpeed2 = -3;
+int triangleRotateSpeed2 = 0;
 
 int firstRingAngle = 0;
-int firstRingRotateSpeed = 1;
+int firstRingRotateSpeed = 0;
 
 int secondRingAngle = 0;
-int secondRingRotateSpeed = 1;
+int secondRingRotateSpeed = 0;
 
 int thirdRingAngle = 0;
-int thirdRingRotateSpeed = 1;
+int thirdRingRotateSpeed = 0;
 
 void blueColor();
 
@@ -56,7 +59,7 @@ void drawQuarter(int i);
 
 void drawTriangle(int angle, double translateX, double translateY, double moveDistance);
 
-void moveTriangle(double distance);
+void moveTriangle(double x, double y, double distance);
 
 void firstRing();
 
@@ -77,17 +80,18 @@ void timer(int test) {
     secondRingAngle += secondRingRotateSpeed;
     thirdRingAngle += thirdRingRotateSpeed;
 
-
+    move += moveSpeed;
 
     triangleAngle0 += (triangleRotateSpeed0 * thirdRingRotateSpeed);
     triangleAngle1 += (triangleRotateSpeed1 * thirdRingRotateSpeed);
     triangleAngle2 += (triangleRotateSpeed2 * thirdRingRotateSpeed);
 
-    if (thirdRingAngle % 3600 == 0 && thirdRingAngle != 0) {
+    if (move % 360 == 0 && move != 0) {
         currentDirection = -currentDirection;
     }
 
-    currentMoveDistance += ((currentDirection * maxMoveDistance)/3600);
+//    currentMoveDistance += ((currentDirection * maxMoveDistance)/3600);
+    currentMoveDistance += (currentDirection * maxMoveDistance)/360;
     glutPostRedisplay();
 }
 
@@ -130,13 +134,13 @@ void thirdRing() {
     glRotated(thirdRingAngle, 0, 0, 1);
 
     cyanColor();
-    drawTriangle(triangleAngle2, 2 * size, 0, 0);
+    drawTriangle(triangleAngle2, 2 * size, 0, currentMoveDistance);
 
     redColor();
-    drawTriangle(triangleAngle2, 0, 2 * size, 0);
+    drawTriangle(triangleAngle2, 0, 2 * size, currentMoveDistance);
 
     yellowColor();
-    drawTriangle(triangleAngle2, size, size, 0);
+    drawTriangle(triangleAngle2, size, size, currentMoveDistance);
 
     glPopMatrix();
 }
@@ -164,15 +168,22 @@ void firstRing() {
 
 void drawTriangle(int angle, double translateX, double translateY, double moveDistance) {
     glPushMatrix();
-    moveTriangle(moveDistance);
+    moveTriangle(translateX, translateY, moveDistance);
     rotateTriangle(angle, translateX, translateY);
     glTranslated(translateX, translateY, 0);
     triangle();
     glPopMatrix();
 }
 
-void moveTriangle(double distance) {
-    glTranslated(distance, distance, 0);
+void moveTriangle(double x, double y, double distance) {
+    double sX = (2 * x + x + size) / 3;
+    double sY = (2 * y + y + size) / 3;
+
+    double angle = atan(sY/sX);
+    double dx = cos(angle) * distance;
+    double dy = sin(angle) * distance;
+
+    glTranslated(dx, dy, 0);
 }
 
 void yellowColor() { glColor3f(1, 1, 0); }
